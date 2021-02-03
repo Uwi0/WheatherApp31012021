@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.location.*
 import com.kakapo.weatherapps.R
+import com.kakapo.weatherapps.utils.Constants
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
             val longitude = mLastLocation.longitude
             Log.i("Current longitude", "$longitude")
+            getLocationWeatherDetail()
         }
     }
 
@@ -129,5 +131,21 @@ class MainActivity : AppCompatActivity() {
                 mLocationCallback,
                 Looper.myLooper()
         )
+    }
+
+    private fun getLocationWeatherDetail(){
+        if(Constants.isNetWorkAvailable(this)){
+            Toast.makeText(
+                this@MainActivity,
+                "You have connected to the internet. now you can make an API call",
+                Toast.LENGTH_SHORT
+            ).show()
+        }else{
+            Toast.makeText(
+                this@MainActivity,
+                "No Internet connection available",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
