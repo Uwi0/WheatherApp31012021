@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.location.*
@@ -33,6 +35,27 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var ivMain: ImageView
+    private lateinit var tvMain: TextView
+    private lateinit var tvMainDescription: TextView
+    private lateinit var ivHumidity: ImageView
+    private lateinit var tvTemp: TextView
+    private lateinit var tvHumidity: TextView
+    private lateinit var ivMinMax: ImageView
+    private lateinit var tvMin: TextView
+    private lateinit var tvMax: TextView
+    private lateinit var ivWind: ImageView
+    private lateinit var tvSpeed: TextView
+    private lateinit var tvSpeedUnit: TextView
+    private lateinit var ivLocation: ImageView
+    private lateinit var tvName: TextView
+    private lateinit var tvCountry: TextView
+    private lateinit var ivSunRise: ImageView
+    private lateinit var tvSunRiseTime: TextView
+    private lateinit var ivSunset: ImageView
+    private lateinit var tvSunsetTime: TextView
+
+
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private var mProgressDialog: Dialog? = null
 
@@ -51,6 +74,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        ivMain = findViewById(R.id.iv_main)
+        tvMain = findViewById(R.id.tv_main)
+        tvMainDescription = findViewById(R.id.tv_main_description)
+        ivHumidity = findViewById(R.id.iv_humidity)
+        tvTemp = findViewById(R.id.tv_temp)
+        tvHumidity = findViewById(R.id.tv_humidity)
+        ivMinMax = findViewById(R.id.iv_min_max)
+        tvMin = findViewById(R.id.tv_min)
+        tvMax = findViewById(R.id.tv_max)
+        ivWind = findViewById(R.id.iv_wind)
+        tvSpeed = findViewById(R.id.tv_speed)
+        tvSpeedUnit = findViewById(R.id.tv_speed_unit)
+        ivLocation = findViewById(R.id.iv_location)
+        tvName = findViewById(R.id.tv_name)
+        tvCountry = findViewById(R.id.tv_country)
+        ivSunRise = findViewById(R.id.iv_sunrise)
+        tvSunRiseTime = findViewById(R.id.tv_sunrise_time)
+        ivSunset = findViewById(R.id.iv_sunset)
+        tvSunsetTime = findViewById(R.id.tv_sunset_time)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -167,6 +210,7 @@ class MainActivity : AppCompatActivity() {
                         hideProgressDialog()
 
                         val weatherList: WeatherResponse = response.body()!!
+                        setupUi(weatherList)
                         Log.i("Response Result", "$weatherList")
                     }else{
                         when(response.code()){
@@ -203,5 +247,26 @@ class MainActivity : AppCompatActivity() {
         if(mProgressDialog != null){
             mProgressDialog!!.dismiss()
         }
+    }
+
+    private fun setupUi(weatherList: WeatherResponse){
+
+       for (i in weatherList.weather!!.indices){
+           Log.i("Weather Name", weatherList.weather.toString())
+           tvMain.text = weatherList.weather[i].main
+           tvMainDescription.text = weatherList.weather[i].description
+           tvTemp.text = weatherList.main!!.temp.toString()+
+                   getUnit(application.resources.configuration.toString())
+
+       }
+    }
+
+    private fun getUnit(values: String) : String{
+        var value = "°C"
+        if("US" == value || "LR" == values || "MM" == values){
+            value = "°F"
+        }
+
+        return value
     }
 }
