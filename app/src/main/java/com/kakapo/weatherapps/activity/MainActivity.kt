@@ -16,12 +16,19 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.location.*
 import com.kakapo.weatherapps.R
+import com.kakapo.weatherapps.model.WeatherResponse
+import com.kakapo.weatherapps.network.WeatherService
 import com.kakapo.weatherapps.utils.Constants
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
             val longitude = mLastLocation.longitude
             Log.i("Current longitude", "$longitude")
-            getLocationWeatherDetail()
+            getLocationWeatherDetail(latitude, longitude)
         }
     }
 
@@ -133,13 +140,42 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun getLocationWeatherDetail(){
+    private fun getLocationWeatherDetail(latitude: Double, longitude: Double){
         if(Constants.isNetWorkAvailable(this)){
-            Toast.makeText(
-                this@MainActivity,
-                "You have connected to the internet. now you can make an API call",
-                Toast.LENGTH_SHORT
-            ).show()
+            val retrofit: Retrofit = Retrofit.Builder()
+                    .baseUrl(Constants.BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+
+            val service: WeatherService = retrofit.create(WeatherService::class.java)
+
+            val listCall: Call<WeatherResponse> = service.getWeather(
+                    latitude,
+                    longitude,
+                    Constants.METRIC_UNIT,
+                    Constants.APP_ID
+            )
+
+            listCall.enqueue(object : Callback<WeatherResponse> {
+                override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                    if(response.isSuccessful){
+                        val weatherList: WeatherResponse = response.body()!!
+                        Log.i("Response Result", "$weatherList")
+                    }else{
+                        when(response.code()){
+                            400 -> Log.e("Error 400", "Bad Request")
+                            404 -> Log.e("Error 404", "Not Found")
+                            else -> Log.e("Error", "Generic Error")
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                    Log.e("Errorrrrr", t.message.toString())
+                }
+
+            })
+
         }else{
             Toast.makeText(
                 this@MainActivity,
