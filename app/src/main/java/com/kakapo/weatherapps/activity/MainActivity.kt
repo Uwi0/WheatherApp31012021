@@ -2,6 +2,7 @@ package com.kakapo.weatherapps.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.location.Location
@@ -33,6 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+    private var mProgressDialog: Dialog? = null
 
     private val mLocationCallback = object: LocationCallback(){
         override fun onLocationResult(locationResult: LocationResult) {
@@ -156,9 +158,14 @@ class MainActivity : AppCompatActivity() {
                     Constants.APP_ID
             )
 
+            showCustomDialogProgressDialog()
+
             listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                     if(response.isSuccessful){
+
+                        hideProgressDialog()
+
                         val weatherList: WeatherResponse = response.body()!!
                         Log.i("Response Result", "$weatherList")
                     }else{
@@ -172,6 +179,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     Log.e("Errorrrrr", t.message.toString())
+                    hideProgressDialog()
                 }
 
             })
@@ -182,6 +190,18 @@ class MainActivity : AppCompatActivity() {
                 "No Internet connection available",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    private fun showCustomDialogProgressDialog(){
+        mProgressDialog = Dialog(this)
+        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
+        mProgressDialog!!.show()
+    }
+
+    private fun hideProgressDialog(){
+        if(mProgressDialog != null){
+            mProgressDialog!!.dismiss()
         }
     }
 }
